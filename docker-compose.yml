@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    container_name: pg-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: africastalking
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: django-backend
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_DB=africastalking
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DEBUG=True
+      - SECRET_KEY=dev_secret_key
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: react-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
